@@ -1,0 +1,13 @@
+<div class="form-group">
+    <label for="group" class="col-md-2 control-label label-sm">Group</label>
+    <div class="col-md-4">
+        <select class="form-control" id="group" name="sprint_group">
+            <check if="{{ count(@groups) }}">
+                <option value="" disabled selected>Select a Group</option>
+                <repeat group="{{ @groups }}" value="{{ @group }}">
+                    <option value="{{ @group.id |esc }}">{{ @group.name | esc }}</option>
+                </repeat>
+            </check>
+        </select>
+    </div>
+</div>
