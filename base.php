@@ -14,6 +14,7 @@ class Base extends \Plugin {
      */
     public function _load() {
         $this->_hook("render.sprint_new.before_submit", array($this, "groupSelect"));
+        $this->_hook("model/sprint.after_save", array($this, "saveSprintGroup"));
     }
 
     /**
@@ -71,5 +72,25 @@ class Base extends \Plugin {
             $f3->set("groups", $group_array);
             echo \Template::instance()->render("groupsprints/view/sprint_new.html");
         }
+    }
+
+    public function saveSprintGroup($sprint) {
+        $f3 = \Base::instance();
+        $post = $f3->get("POST");
+
+        $sprintGroup = new Model\Group;
+        $sprintGroupCollection = $sprintGroup->find(array("sprint_id = ?", $sprint->id));
+
+        if (count($sprintGroupCollection)) {
+            foreach ($sprintGroupCollection as $sprintGroup) {
+                $sprintGroup->sprint_id = $sprint->id;
+                $sprintGroup->group_id = $post["sprint_group"];
+                $sprintGroup->save();
+            }
+            return;
+        }
+        $sprintGroup->sprint_id = $sprint->id;
+        $sprintGroup->group_id = $post["sprint_group"];
+        $sprintGroup->save();
     }
 }
