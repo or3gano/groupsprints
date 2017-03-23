@@ -14,6 +14,7 @@ class Base extends \Plugin {
      */
     public function _load() {
         $this->_hook("render.sprint_new.before_submit", array($this, "groupSelect"));
+        $this->_hook("render.sprint_edit.before_submit", array($this, "groupSelect"));
         $this->_hook("model/sprint.after_save", array($this, "saveSprintGroup"));
     }
 
@@ -50,30 +51,41 @@ class Base extends \Plugin {
      * Output group select input on new sprint form
      * @return [type] [description]
      */
-    public function groupSelect() {
+    public function groupSelect($sprint = null) {
         if ($this->_installed()) {
             $f3 = \Base::instance();
 
             $group = new \Model\User();
             $groups = $group->find("deleted_date IS NULL AND role = 'group'");
 
-            $group_array = array();
+            $groupArray = array();
             $db = $f3->get("db.instance");
             foreach($groups as $g) {
                 $db->exec("SELECT g.id FROM user_group g JOIN user u ON g.user_id = u.id WHERE g.group_id = ? AND u.deleted_date IS NULL", $g["id"]);
                 $count = $db->count();
-                $group_array[] = array(
+                $groupArray[] = array(
                     "id" => $g["id"],
                     "name" => $g["name"],
                     "task_color" => $g["task_color"],
                     "count" => $count
                 );
             }
-            $f3->set("groups", $group_array);
-            echo \Template::instance()->render("groupsprints/view/sprint_new.html");
+            $f3->set("groups", $groupArray);
+
+            if ($sprint) {
+                $sprintGroup = new Model\Group;
+                $sprintGroup->load(array("sprint_id = ?", $sprint->id));
+                $f3->set("sprintgroup", $sprintGroup);
+            }
+
+            echo \Template::instance()->render("groupsprints/view/group_select.html");
         }
     }
 
+    /**
+     * Update or add sprint group on sprint save
+     * @param  $sprint
+     */
     public function saveSprintGroup($sprint) {
         $f3 = \Base::instance();
         $post = $f3->get("POST");
@@ -89,6 +101,7 @@ class Base extends \Plugin {
             }
             return;
         }
+
         $sprintGroup->sprint_id = $sprint->id;
         $sprintGroup->group_id = $post["sprint_group"];
         $sprintGroup->save();

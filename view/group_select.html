@@ -5,7 +5,9 @@
             <check if="{{ count(@groups) }}">
                 <option value="" disabled selected>Select a Group</option>
                 <repeat group="{{ @groups }}" value="{{ @group }}">
-                    <option value="{{ @group.id |esc }}">{{ @group.name | esc }}</option>
+                    <option value="{{ @group.id |esc }}"{{ @sprintgroup.group_id == @group.id ? "selected" : "" }}>
+                        {{ @group.name | esc }}
+                    </option>
                 </repeat>
             </check>
         </select>
