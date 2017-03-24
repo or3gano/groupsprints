@@ -13,6 +13,8 @@ class Base extends \Plugin {
      * Initialize plugin
      */
     public function _load() {
+        $this->_hook("render.sprints.theadrow_after", array($this, "groupColumnHeading"));
+        $this->_hook("render.sprints.tablerow_after", array($this, "groupColumn"));
         $this->_hook("render.sprint_new.before_submit", array($this, "groupSelect"));
         $this->_hook("render.sprint_edit.before_submit", array($this, "groupSelect"));
         $this->_hook("model/sprint.after_save", array($this, "saveSprintGroup"));
@@ -105,5 +107,32 @@ class Base extends \Plugin {
         $sprintGroup->sprint_id = $sprint->id;
         $sprintGroup->group_id = $post["sprint_group"];
         $sprintGroup->save();
+    }
+
+    /**
+     * Add group heading to sprints table
+     */
+    public function groupColumnHeading() {
+        if ($this->_installed()) {
+            echo "<th>Group</th>";
+        }
+    }
+
+    /**
+     * Add group name to each sprint on sprints table
+     * @param  $sprint
+     */
+    public function groupColumn($sprint) {
+        if ($this->_installed()) {
+            $f3 = \Base::instance();
+
+            $sprintGroup = new Model\Group;
+            $sprintGroup->load(array("sprint_id = ?", $sprint->id));
+
+            $group = new \Model\User();
+            $group->load($sprintGroup->group_id);
+
+            echo "<td>" . $group->name . "</td>";
+        }
     }
 }
